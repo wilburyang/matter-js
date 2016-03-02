@@ -71,10 +71,10 @@ var Body = require('../body/Body');*/
         return sound;
     };*/
     
-    var workerText = 'function accelerationNoise(a){for(var e=a.collision,o=480,t=new Float32Array(o),n=0;o>n;n++)t[n]=-Math.cos(n/o*Math.PI)*e.depth/5;return t}onmessage=function(a){var e=a.data,o=accelerationNoise(e);postMessage(o)};';
+    var workerCode = "/*BEGINSOUNDWORKER*/function accelerationNoise(o){for(var a=o.collision,e=48,n=new Float32Array(e),t=0;e>t;t++)n[t]=-Math.cos(t/e*Math.PI)*a.depth/5;return n}function modalSound(o){}onmessage=function(o){var a=o.data,e=accelerationNoise(a);postMessage(e)};/*ENDSOUNDWORKER*/";
     
     // http://stackoverflow.com/questions/5408406/web-workers-without-a-separate-javascript-file
-    var blob = new Blob([workerText], {type: "text/javascript"});
+    var blob = new Blob([workerCode], {type: "text/javascript"});
     var workers = [];
     //http://stackoverflow.com/questions/13574158/number-of-web-workers-limit
     var maxWorkers = 16;

@@ -25,6 +25,7 @@ var fs = require('fs');
 var watchify = require('watchify');
 var extend = require('util')._extend;
 var exec = require('child_process').exec;
+var uglifyjs = require('uglify-js');
 var buildDirectory = 'build';
 var server;
 
@@ -96,7 +97,8 @@ gulp.task('watch', function() {
 
     b.on('update', bundle);
     bundle();
-
+    
+    gulp.watch('src/Sound/SoundWorker.js', ['build:dev']);
     gulp.watch('examples/**/*.js', ['build:examples']);
 });
 
@@ -213,11 +215,17 @@ var serve = function(isTest) {
 var build = function(options) {
     var filename = buildDirectory + '/matter',
         dest = filename + '.js',
-        destMin = filename + '.min.js';
+        destMin = filename + '.min.js',
+        minSoundWorker = uglifyjs.minify('src/Sound/SoundWorker.js').code;
 
     options.date = options.date || new Date().toISOString().slice(0, 10);
     options.author = '@liabru';
 
+    gulp.src(['src/Sound/Sound.js'])
+        .pipe(replace(/\/\*BEGINSOUNDWORKER\*\/.*\/\*ENDSOUNDWORKER\*\//g,
+                '/*BEGINSOUNDWORKER*/' + minSoundWorker + '/*ENDSOUNDWORKER*/'))
+        .pipe(gulp.dest('src/Sound/'));
+    
     gutil.log('Building', filename, options.date);
 
     var compiled = gulp.src(['src/module/main.js'])
