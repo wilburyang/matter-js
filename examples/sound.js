@@ -26,8 +26,8 @@
 
         // scene code
 
-        var stack = Composites.stack(50, 100, 8, 4, 50, 50, function(x, y) {
-            return Bodies.circle(x, y, 15, { restitution: 0.8, render: { strokeStyle: '#777' } });
+        var stack = Composites.stack(50, 100, 1, 1, 50, 50, function(x, y) {
+            return Bodies.rectangle(x, y, 150, 150, { restitution: 0.8, render: { strokeStyle: '#777' } });
         });
         
         World.add(world, stack);
