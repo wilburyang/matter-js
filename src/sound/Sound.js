@@ -25,8 +25,6 @@ var Constraint = require('../constraint/Constraint');
 var Common = require('./Common');
 var Body = require('../body/Body');*/
 
-var numeric = require('numeric');
-
 (function() {
 
     Sound.player = {};
