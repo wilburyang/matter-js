@@ -15,8 +15,8 @@ var defaultE = 7e10;
 
 var h = 1 / 48000;
 
-var alpha = 0,
-    beta = 0;
+var alpha = 10,
+    beta = 0.00001;
 
 var w, xi, wd, eps, theta, gamma;
 
@@ -156,7 +156,7 @@ function getRotationMatrix(theta) {
 }
 
 function generateModalSound(pair) {
-    var frames = 48000 / 1000; // placeholder
+    var frames = 48000 / 10; // placeholder
     var bufferData = new Float32Array(frames);
 
     // for now, approximate force with depth
@@ -193,6 +193,7 @@ function generateModalSound(pair) {
         
 
         q = numeric.sub(numeric.mul(firstTerm, qp), numeric.mul(secondTerm, qpp));
+        //q = numeric.add(q, numeric.mul(thirdTerm, numeric.mul(Q, Math.sin(i / frames * Math.PI))));
         q = numeric.add(q, numeric.mul(thirdTerm, Q));
     }
     return bufferData;
@@ -205,13 +206,43 @@ function modalForceMatrix(vertexInd, normal, depth) {
     return numeric.dot(uColumns, f);
 }
 
+function postProcess(buffer) {
+    //var k = buffer.length - 1;
+    /*for (var i = 0; i < buffer.length; i++) {
+        var same = true;
+        for (var j = i; j < i + 5 && j < buffer.length; j++) {
+            if (Math.abs(buffer[i] - buffer[j]) > 1e-9) {
+                same = false;
+            }
+        }
+        if (same) {
+            k = i;
+            break;
+        }
+    }*/
+    //console.log(k);
+    //buffer.length = k + 1;
+    /*for (var i = k; i < buffer.length; i++) {
+        buffer[i] *= 1 - (i - k) / (buffer.length - k + 1);
+    }
+    buffer[buffer.length - 1] = 0;*/
+    var start = Math.floor(buffer.length * 3 / 4);
+    for (var i = start; i < buffer.length; i++) {
+        buffer[i] *= Math.exp(-(i - start) / 100);
+    }
+    return buffer;
+}
+
 function modalSound(pair) {
     // for now, assume all shapes are squares
     
     if (!evals || !evecs) return;
-        
+      
+    var time = new Date().getTime();
     var buffer = generateModalSound(pair);
-    return buffer;
+    //console.log(buffer);
+    console.log(new Date().getTime() - time);
+    return postProcess(buffer);
 }
 
 this.onmessage = function(e) {
@@ -219,11 +250,11 @@ this.onmessage = function(e) {
     if (obj.task === 'setup') {
         runSetup(obj.url);
     } else {
-        var accNoise = accelerationNoise(obj);
+        //var accNoise = accelerationNoise(obj);
         var modalNoise = modalSound(obj);
-        for (var i = 0; i < modalNoise.length; i++) {
+        /*for (var i = 0; i < modalNoise.length; i++) {
             modalNoise[i] += accNoise[i];
-        }
+        }*/
         postMessage(modalNoise);
     }
 };
@@ -269,7 +300,7 @@ function getEigenvalues(url, callback) {
             callback('Error: cannot load eigenvalues');
         }
     });
-    xhr.open('GET', url + '/demo/js/lib/modes/eigenvalues_low.json');
+    xhr.open('GET', url + '/demo/js/lib/modes/eigenvalues_small.json');
     xhr.send();
 }
 
@@ -282,7 +313,7 @@ function getEigenvectors(url, callback) {
             callback('Error: cannot load eigenvectors');
         }
     });
-    xhr.open('GET', url + '/demo/js/lib/modes/eigenvectors_low.json');
+    xhr.open('GET', url + '/demo/js/lib/modes/eigenvectors_small.json');
     xhr.send();
 }
 
